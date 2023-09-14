@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -71,8 +72,9 @@ public  Authentication(SiteUserRepo userRepo) {
         }
         HttpSession session= request.getSession();
         session.setAttribute("userName", userName);
+      session.setAttribute("userId",userFromDb.getId());
 
-        return new RedirectView("/secretHome");
+        return new RedirectView("/secretHome/"+userFromDb.getId());
     }
 
     @PostMapping("logoutWithSecret")
@@ -88,15 +90,22 @@ public  Authentication(SiteUserRepo userRepo) {
     public String getLoginPageWithSecret(){
         return "loginWithSecret.html";
     }
-    @GetMapping("/secretHome")
-    public String getHomePageWithSecret(HttpServletRequest request, Model m){
+    @GetMapping("/secretHome/{id}")
+    public String getHomePageWithSecret(HttpServletRequest request, Model m, @PathVariable Long id){
 
         HttpSession session = request.getSession();
         String userName= session.getAttribute("userName").toString();
-        if (userName == null) {
+       String stringUserId= session.getAttribute("userId").toString();
+        Long userId= Long.parseLong(stringUserId);
+        SiteUser user = userRepo.findById(id).get();
+        System.out.println("user id"+user.getId());
+        if (user == null) {
             return "redirect:/loginWithSecret";
         }
         m.addAttribute("userName", userName);
+        m.addAttribute("userId", userId);
+        m.addAttribute("user",user);
+
 
         return "indexWithSecret.html";
     }

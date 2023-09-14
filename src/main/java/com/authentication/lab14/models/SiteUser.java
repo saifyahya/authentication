@@ -1,9 +1,7 @@
 package com.authentication.lab14.models;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 public class SiteUser {
@@ -13,6 +11,8 @@ public class SiteUser {
     private String email;
 private String userName;
 private String password;
+@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+private List<Post> posts;
 
     public SiteUser(String userName, String password, String email) {
         this.userName = userName;
@@ -22,6 +22,18 @@ private String password;
 public SiteUser(){
 
 }
+
+    public Long getId() {
+        return id;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
 
     public void setEmail(String email) {
         this.email = email;

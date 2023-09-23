@@ -13,6 +13,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 public class Authentication {
@@ -21,11 +22,6 @@ SiteUserRepo userRepo;
 public  Authentication(SiteUserRepo userRepo) {
    this.userRepo=userRepo;
 }
-
-    @GetMapping("/login")
-    public String getLoginPage(){
-        return "/login.html";
-    }
 
     @GetMapping("/signup")
     public String getSignupPage(){
@@ -45,20 +41,6 @@ public  Authentication(SiteUserRepo userRepo) {
         return new RedirectView("login");
     }
 
-    @PostMapping("/login")
-    public RedirectView logIn(String userName, String password){
-        SiteUser userFromDb =userRepo.findByuserName(userName);
-        System.out.println(userName+"  "+password);
-
-        if((userFromDb == null)
-                || (!BCrypt.checkpw(password, userFromDb.getPassword())))
-        {
-
-            return new RedirectView("/login");
-        }
-
-        return new RedirectView("/");
-    }
 
     @PostMapping("/loginWithSecret")
     public RedirectView logInUSerWithSecret(HttpServletRequest request, String userName, String password){
@@ -67,12 +49,12 @@ public  Authentication(SiteUserRepo userRepo) {
         if((userFromDb == null)
                 || (!BCrypt.checkpw(password, userFromDb.getPassword())))
         {
-
+            System.out.println("incorrect password or username");
             return new RedirectView("/loginWithSecret");
         }
         HttpSession session= request.getSession();
         session.setAttribute("userName", userName);
-      session.setAttribute("userId",userFromDb.getId());
+      //session.setAttribute("userId",userFromDb.getId());
 
         return new RedirectView("/secretHome/"+userFromDb.getId());
     }
@@ -94,20 +76,30 @@ public  Authentication(SiteUserRepo userRepo) {
     public String getHomePageWithSecret(HttpServletRequest request, Model m, @PathVariable Long id){
 
         HttpSession session = request.getSession();
+
+       if( session.getAttribute("userName")==null){  // not logged-in users will redirect to login page
+           return "redirect:/loginWithSecret";
+       }
         String userName= session.getAttribute("userName").toString();
-       String stringUserId= session.getAttribute("userId").toString();
-        Long userId= Long.parseLong(stringUserId);
         SiteUser user = userRepo.findById(id).get();
-        System.out.println("user id"+user.getId());
+        System.out.println("username from session:"+userName);
+        System.out.println("username from url:"+user.getUserName());
+        if(userName.equals(user.getUserName())) {// compare username for the logged-in user with the username for the wanted home page
+            m.addAttribute("canPost",true);
+        }
+
+        System.out.println("user id: "+id);
         if (user == null) {
             return "redirect:/loginWithSecret";
         }
-        m.addAttribute("userName", userName);
-        m.addAttribute("userId", userId);
+        m.addAttribute("userName", user.getUserName());
+       // m.addAttribute("userId", id);
         m.addAttribute("user",user);
-
+        List<SiteUser> allUsers= userRepo.findAll();  // return all users
+        m.addAttribute("allUsers",allUsers);
 
         return "indexWithSecret.html";
     }
+
 }
 

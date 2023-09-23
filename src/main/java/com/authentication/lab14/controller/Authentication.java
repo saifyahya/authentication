@@ -38,7 +38,7 @@ public  Authentication(SiteUserRepo userRepo) {
         String hashedPassword= BCrypt.hashpw(password, BCrypt.gensalt(12));
         SiteUser siteUser = new SiteUser(userName,hashedPassword,email);
         userRepo.save(siteUser);
-        return new RedirectView("login");
+        return new RedirectView("/loginWithSecret");
     }
 
 
@@ -67,7 +67,11 @@ public  Authentication(SiteUserRepo userRepo) {
 
         return new RedirectView("/loginWithSecret");
     }
+    @GetMapping("/logoutWithSecret")
+    public RedirectView logUserWithSecret(HttpServletRequest request){
 
+        return new RedirectView("/loginWithSecret");
+    }
     @GetMapping("/loginWithSecret")
     public String getLoginPageWithSecret(){
         return "loginWithSecret.html";

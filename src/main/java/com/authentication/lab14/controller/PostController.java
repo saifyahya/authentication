@@ -22,16 +22,16 @@ SiteUserRepo userRepo;
 
 
     @PostMapping("/add-post")
-    public RedirectView addPost(String content, String userId) {
-    Long userIdLong=Long.parseLong(userId);
-    SiteUser userFromDB =userRepo.findById(userIdLong).get();
+    public RedirectView addPost(String content, Long userId) {
+
+    SiteUser userFromDB =userRepo.findById(userId).get();
         System.out.println("user want to post"+userId);
     if(userFromDB==null){
         System.out.println("user = null");
         return new RedirectView("/secretHome");}
         Post newPost = new Post(content,userFromDB);
         postRepo.save(newPost);
-        return new RedirectView("/secretHome");
+        return new RedirectView("/secretHome/"+userId);
     }
 
 }
